@@ -1,0 +1,21 @@
+
+body {
+  margin-top: 60px;
+}
+
+.tweets ul {
+  padding: 0;
+  list-style: none;
+}
+
+.tweets ul li {
+  margin-bottom: 10px;
+  border-bottom: solid 1px #000;
+  overflow: hidden;
+  padding: 0 10px;
+}
+
+.tweets ul li img {
+  float: left;
+  margin: 0 10px;
+}
