@@ -4,20 +4,19 @@
 
 // A first simple way of encapsulating your code in a
 // *namespace*
-var Foo = {
+var Foo = (function() {
+
+  // our template to use
+  var tmpl = Hogan.compile($("#tweets-tmpl").html());
 
   // ### init
-  init: function() {
-    this.tmpl = Hogan.compile($("#tweets-tmpl").html());
-    this.loadTweets();
+  var init = function() {
+    loadTweets();
   },
 
   // ### loadTweets
-  loadTweets: function() {
+  loadTweets = function() {
     var url = "http://api.twitter.com/1/statuses/user_timeline.json?screen_name=lillerik&count=5";
-
-    // store a reference to this.
-    var _this = this;
 
     // Load the tweets...
     $.ajax({ url: url, dataType: "jsonp" })
@@ -30,11 +29,16 @@ var Foo = {
       // ... when done.
       .done(function(tweets) {
         // render the template
-        $(".tweets .span6").append(_this.tmpl.render({ tweets: tweets }));
+        $(".tweets .span6").append(tmpl.render({ tweets: tweets }));
       });
+  };
+
+  // Return the function to be made public
+  return {
+    init: init
   }
 
-};
+})();
 
 // When DOM is loaded, initialize our application
 $(function() {
