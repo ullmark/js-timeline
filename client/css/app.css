@@ -5,6 +5,7 @@ body {
 
 .tweets ul {
   padding: 0;
+  margin-bottom: 30px;
   list-style: none;
 }
 
