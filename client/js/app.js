@@ -2,46 +2,79 @@
 // Foo App
 // -----------
 
-// Our namespace
+// Our namespaces
 var Foo = {};
+Foo.Models = {};
+Foo.Collections = {};
+Foo.Views = {};
 
-// Tweet List
-// ----------
-Foo.TweetList = function(el) {
-  this.el = $(el);
-  this.url = "http://api.twitter.com/1/statuses/user_timeline.json?screen_name=";
-  this.url += this.el.data("handle") + "&count=5";
-  this.loadTweets();
-};
+// Models
+// --------------
 
-// Our tmpl
-Foo.TweetList.prototype.tmpl = Hogan.compile($("#tweets-tmpl").html());
+Foo.Models.Tweet = Backbone.Model.extend({
+});
 
-// ### loadTweets
-Foo.TweetList.prototype.loadTweets = function() {
-  // keep track of *this*
-  var _this = this;
-  // Load the tweets...
-  $.ajax({ url: this.url, dataType: "jsonp" })
+// Collections
+// --------------
 
-    // ... when fails
-    .fail(function(response) {
-      console.log(response);
-    })
+Foo.Collections.TweetCollection = Backbone.Collection.extend({
+});
 
-    // ... when done.
-    .done(function(tweets) {
-      // render the template
-      _this.el.find(".span6").append(_this.tmpl.render({ tweets: tweets }));
+// Views
+// --------------
+
+Foo.Views.TweetList = Backbone.View.extend({
+  // our template
+  tmpl: Hogan.compile($("#tweet-tmpl").html()),
+
+  // ### initialize
+  initialize: function() {
+    _.bindAll(this);
+
+    this.ul = $("<ul>");
+
+    var url = "http://api.twitter.com/1/statuses/user_timeline.json?screen_name=";
+    url += this.$el.data("handle") + "&count=5";
+
+    this.tweets = new Foo.Collections.TweetCollection();
+    this.tweets.url = url;
+    this.tweets.on("reset", this.addAll);
+    this.tweets.on("add", this.addOne);
+  },
+
+  // ### addAll
+  addAll: function(tweets) {
+    tweets.each(this.addOne);
+  },
+
+  // ### addOne
+  addOne: function(tweet) {
+    this.$("ul").append(this.tmpl.render(tweet.attributes));
+  },
+
+  // ### render
+  render: function() {
+    this.$(".span6").append(this.ul);
+    this.tweets.fetch({ dataType: "jsonp" });
+    return this;
+  }
+
+});
+
+Foo.Views.App = Backbone.View.extend({
+  // The el is already visible on page
+  el: $("#foo"),
+
+  // ### initialize
+  initialize: function() {
+    this.$(".tweets").each(function(index, el) {
+      var tweets = new Foo.Views.TweetList({ el: el });
+      tweets.render();
     });
-};
+  }
 
-// When DOM is loaded, loop all tweet lists and
-// create a **TweetList** for each.
+});
+
 $(function() {
-
-  $(".tweets").each(function(index, el) {
-    new Foo.TweetList(el);
-  });
-
+  new Foo.Views.App;
 });
