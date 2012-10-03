@@ -2,46 +2,46 @@
 // Foo App
 // -----------
 
-// A first simple way of encapsulating your code in a
-// *namespace*
-var Foo = (function() {
+// Our namespace
+var Foo = {};
 
-  // our template to use
-  var tmpl = Hogan.compile($("#tweets-tmpl").html());
+// Tweet List
+// ----------
+Foo.TweetList = function(el) {
+  this.el = $(el);
+  this.url = "http://api.twitter.com/1/statuses/user_timeline.json?screen_name=";
+  this.url += this.el.data("handle") + "&count=5";
+  this.loadTweets();
+};
 
-  // ### init
-  var init = function() {
-    loadTweets();
-  },
+// Our tmpl
+Foo.TweetList.prototype.tmpl = Hogan.compile($("#tweets-tmpl").html());
 
-  // ### loadTweets
-  loadTweets = function() {
-    var url = "http://api.twitter.com/1/statuses/user_timeline.json?screen_name=lillerik&count=5";
+// ### loadTweets
+Foo.TweetList.prototype.loadTweets = function() {
+  // keep track of *this*
+  var _this = this;
+  // Load the tweets...
+  $.ajax({ url: this.url, dataType: "jsonp" })
 
-    // Load the tweets...
-    $.ajax({ url: url, dataType: "jsonp" })
+    // ... when fails
+    .fail(function(response) {
+      console.log(response);
+    })
 
-      // ... when fails
-      .fail(function(response) {
-        console.log(response);
-      })
+    // ... when done.
+    .done(function(tweets) {
+      // render the template
+      _this.el.find(".span6").append(_this.tmpl.render({ tweets: tweets }));
+    });
+};
 
-      // ... when done.
-      .done(function(tweets) {
-        // render the template
-        $(".tweets .span6").append(tmpl.render({ tweets: tweets }));
-      });
-  };
-
-  // Return the function to be made public
-  return {
-    init: init
-  }
-
-})();
-
-// When DOM is loaded, initialize our application
+// When DOM is loaded, loop all tweet lists and
+// create a **TweetList** for each.
 $(function() {
-  Foo.init();
-});
 
+  $(".tweets").each(function(index, el) {
+    new Foo.TweetList(el);
+  });
+
+});
